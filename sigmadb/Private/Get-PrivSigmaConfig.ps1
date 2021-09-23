@@ -1,0 +1,47 @@
+<#
+.SYNOPSIS
+    Short description
+.DESCRIPTION
+    Long description
+.EXAMPLE
+    PS C:\> <example usage>
+    Explanation of what the example does
+.INPUTS
+    Inputs (if any)
+.OUTPUTS
+    Output (if any)
+.NOTES
+    Author:     ncrqnt
+    Date:       13.09.2021
+    PowerShell: 7.1.4
+
+    Changelog:
+    1.0.1   22.09.2021  ncrqnt      Made $Config mandatory
+    1.0.0   13.09.2021  ncrqnt      Initial creation
+#>
+
+function Get-PrivSigmaConfig {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Config
+    )
+
+    if (Test-Path $Config) {
+        $cfg = Get-Content -Path $Config | ConvertFrom-Json
+
+        $testpaths = @($cfg.Folders.Root, $cfg.Folders.Rules, $cfg.Folders.Exports)
+
+        foreach ($path in $testpaths) {
+            if (-not (Test-Path $path)) {
+                Write-Error "Could not find path from config '$path'"
+                return
+            }
+        }
+    }
+    else {
+        $cfg = New-PrivSigmaConfig -Config $Config
+    }
+
+    return $cfg
+}
