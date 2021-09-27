@@ -21,6 +21,7 @@
     PowerShell: 7.1.4
 
     Changelog:
+    1.3.1   27.09.2021  ncrqnt      Fixed missing Config parameter
     1.3.0   22.09.2021  ncrqnt      Added usage of config file to private function
                                     Changed call of SigmaDB class
     1.2.1   16.09.2021  ncrqnt      Restructure of config file
@@ -52,7 +53,7 @@ function Get-SigmaRule {
     process {
         if ($Id) {
             # show only single rule
-            Get-PrivSigmaRule -Id $Id -Database $db -Type $Type
+            Get-PrivSigmaRule -Id $Id -Config $cfg -Database $db -Type $Type
         }
         else {
             # show all rule
@@ -60,7 +61,7 @@ function Get-SigmaRule {
 
             if ($ids.count -gt 0) {
                 foreach ($id in $ids) {
-                    Get-PrivSigmaRule -Id $id -Database $db -Type $Type -Config $cfg
+                    Get-PrivSigmaRule -Id $id -Config $cfg -Database $db -Type $Type
                 }
             }
             else {
