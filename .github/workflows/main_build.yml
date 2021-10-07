@@ -1,0 +1,71 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+      - '.github/**'
+      - '.gitignore'
+
+  workflow_dispatch:
+
+env:
+  MODULE_NAME: sigmadb
+
+jobs:
+  build:
+    name: Build module
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create variables for module cacher
+        id: psmodulecache
+        uses: potatoqualitee/psmodulecache@v3.5
+        with:
+          modules-to-cache: Pester, PSScriptAnalyzer, InvokeBuild, SimplySql, powershell-yaml
+          shell: pwsh
+
+      - name: Run module cacher action
+        id: cacher
+        uses: actions/cache@v2
+        with:
+          key: ${{ steps.psmodulecache.outputs.keygen }}
+          path: |
+            ${{ steps.psmodulecache.outputs.modulepath }}
+
+      - name: Install PowerShell modules
+        if: steps.cacher.outputs.cache-hit != 'true'
+        uses: potatoqualitee/psmodulecache@v3.5
+
+      - name: Import InvokeBuild
+        run: Import-Module InvokeBuild -ErrorAction Stop
+
+      - name: Build module
+        run: Invoke-Build -Task Build -Configuration 'Release'
+
+#      - name: Upload new build as artifact
+#        uses: actions/upload-artifact@v2.2.4
+#        with:
+#          name: NewBuild
+#          path: .\build\${{ env.MODULE_NAME }}\*
+
+      - name: Bump new version and upload tag
+        run: |
+          $manifest = Import-LocalizedData -FileName ${{ env.MODULE_NAME }}.psd1 -BaseDirectory .\${{ env.MODULE_NAME }}
+          $version = "v$($manifest.ModuleVersion)"
+
+          git config --global user.name 'Github Actions - Git Commit'
+          git config --global user.email 'github-actions-git-commit@users.noreply.github.com'
+          git config --global init.defaultBranch main
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git fetch
+
+          git add .\${{ env.MODULE_NAME }}\${{ env.MODULE_NAME }}.psd1
+          git commit -m "Bump to $version"
+          git push origin main
+
+          git tag -a $version -m "$version"
+          git push origin $version

@@ -1,0 +1,47 @@
+name: Testing
+
+on:
+  pull_request:
+    branches:
+      - main
+      - feature/*
+    paths-ignore:
+      - 'README.md'
+      - '.github/**'
+      - '.gitignore'
+
+jobs:
+  test:
+    name: Test module
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v2
+
+      - name: Create variables for module cacher
+        id: psmodulecache
+        uses: potatoqualitee/psmodulecache@v3.5
+        with:
+          modules-to-cache: Pester, PSScriptAnalyzer, InvokeBuild, SimplySql, powershell-yaml
+          shell: pwsh
+
+      - name: Run module cacher action
+        id: cacher
+        uses: actions/cache@v2
+        with:
+          key: ${{ steps.psmodulecache.outputs.keygen }}
+          path: |
+            ${{ steps.psmodulecache.outputs.modulepath }}
+
+      - name: Install PowerShell modules
+        if: steps.cacher.outputs.cache-hit != 'true'
+        uses: potatoqualitee/psmodulecache@v3.5
+
+      - name: Import InvokeBuild
+        run: Import-Module InvokeBuild -ErrorAction Stop
+
+      - name: Analyze code with PSScriptAnalyzer
+        run: Invoke-Build -Task Analyze
+
+      - name: Test code with Pester tests
+        run: Invoke-Build -Task Test
