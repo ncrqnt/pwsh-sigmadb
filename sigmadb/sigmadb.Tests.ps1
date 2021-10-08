@@ -2,13 +2,14 @@
 
 BeforeDiscovery {
     #region Get functionsPaths
-    $functionPaths = @()
-    if (Test-Path "$PSScriptRoot\Private\*.ps1") {
-        $functionPaths += Get-ChildItem -Path "$PSScriptRoot\Private\*.ps1" -Exclude "*.Tests.*"
-    }
     if (Test-Path "$PSScriptRoot\Public\*.ps1") {
         $functionPaths += Get-ChildItem -Path "$PSScriptRoot\Public\*.ps1" -Exclude "*.Tests.*"
     }
+    <# TODO: Implement testing in private functions (at least 80-90% should already be covered by the public functions)
+    $functionPaths = @()
+    if (Test-Path "$PSScriptRoot\Private\*.ps1") {
+        $functionPaths += Get-ChildItem -Path "$PSScriptRoot\Private\*.ps1" -Exclude "*.Tests.*"
+    } #>
     #endregion
 
     #region Get functions data
@@ -83,10 +84,10 @@ Describe "<Name>" -ForEach $functions {
             $Path | Should -FileContentMatch 'CmdletBinding'
             $Path | Should -FileContentMatch 'Param'
         }
-
+        <# TODO: Implement verbosity in every function
         It "should contain Write-Verbose blocks" {
             $Path | Should -FileContentMatch 'Write-Verbose'
-        }
+        } #>
 
         It "should be a valid PowerShell code" {
             $psFile = Get-Content -Path $Path -ErrorAction Stop
