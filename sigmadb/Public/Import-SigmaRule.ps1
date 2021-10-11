@@ -49,7 +49,9 @@ function Import-SigmaRule {
         [Parameter(Mandatory = $false)]
         [switch]$Disable,
         [Parameter(Mandatory = $false)]
-        [switch]$Force
+        [switch]$Force,
+        [Parameter(Mandatory = $false)]
+        [switch]$NoProgressBar = $false
     )
 
     begin {
@@ -83,7 +85,9 @@ function Import-SigmaRule {
                 $now = '{0:d3}' -f $i
                 $percent = 100 / $max * $i
                 $name = $rule.title
-                Write-Progress -Activity "Importing" -Status "$now / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
+                if (-not $NoProgressBar) {
+                    Write-Progress -Activity "Importing" -Status "$now / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
+                }
                 Import-PrivSigmaRule -File $file -Rule $rule -Database $db -Config $cfg -Disable:$Disable -Force:$Force
                 $i++
             }
