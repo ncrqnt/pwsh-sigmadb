@@ -25,6 +25,13 @@ function Disable-SigmaRule {
     )
 
     process {
-        Set-SigmaRule -Id $Id -Config $Config -IsEnabled $false
+        try {
+            Set-SigmaRule -Id $Id -Config $Config -IsEnabled $false -ErrorAction Stop | Out-Null
+            Write-Output "Rule '$Id' disabled"
+        }
+        catch {
+            Write-Error "Could not disable rule: $_"
+            return
+        }
     }
 }
