@@ -39,7 +39,7 @@ function Import-SigmaRule {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = "Path to one locations.")]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript( { if (Test-Path $_ -PathType Container) { $true } else { throw "$_ is not a directory." } })]
         [SupportsWildcards()]
         [string]$Path,
         [Parameter(Mandatory = $false)]
