@@ -56,7 +56,7 @@ function ConvertTo-PrivSigmaYaml {
 
         # Add exceptions to yaml
         if ($exceptions.Count -gt 0) {
-            $yaml = (Add-PrivSigmaException -RuleYaml $dict -ExceptionList $exceptions) | ConvertTo-Yaml
+            $yaml = (Add-PrivSigmaException -RuleDict $dict -ExceptionList $exceptions) | ConvertTo-Yaml
         }
 
         return $yaml

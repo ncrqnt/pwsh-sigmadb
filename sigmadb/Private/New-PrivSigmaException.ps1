@@ -54,6 +54,11 @@ function New-PrivSigmaException {
     }
 
     process {
+        switch ($Operator) {
+            "nand" { $Operator = 'and not'}
+            "nor" { $Operator = 'or not' }
+        }
+
         $parameters = @{
             id       = $null
             operator = $Operator

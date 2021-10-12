@@ -12,7 +12,7 @@
     RootModule        = 'sigmadb.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.1'
+    ModuleVersion     = '0.2.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -135,7 +135,7 @@
             ReleaseNotes               = 'https://github.com/ncrqnt/pwsh-sigmadb/releases'
 
             # Prerelease string of this module
-            Prerelease                 = 'beta'
+            Prerelease                 = ''
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false

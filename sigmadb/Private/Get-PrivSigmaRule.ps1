@@ -73,6 +73,7 @@ function Get-PrivSigmaRule {
             }
             else{
                 Write-Warning -Message "No rule with id '$Id' found"
+                return
             }
         }
         catch {
