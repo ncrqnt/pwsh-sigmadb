@@ -48,12 +48,14 @@ function Export-SigmaRule {
         [string]$SigmaRepo,
         [Parameter(Mandatory = $false, ParameterSetName='sigma')]
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
-        [switch]$IncludeDisabled,
+        [switch]$ExcludeDisabled,
         [Parameter(Mandatory = $true, ParameterSetName='elastic')]
         [switch]$Elastic,
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
         [ValidateScript( { if (Test-Path $_ -PathType Leaf) { $true } else { throw "$_ not found or not a file." } })]
-        [string]$BackendConfig
+        [string]$BackendConfig,
+        [Parameter(Mandatory = $false, ParameterSetName='elastic')]
+        [pscredential]$Credential
     )
 
     begin {
@@ -62,6 +64,13 @@ function Export-SigmaRule {
 
         if (-not $Destination) {
             $Destination = $cfg.Folders.Exports
+        }
+
+        if (-not $Credential) {
+            if ($cfg.ExportToElastic.Enabled) {
+                Write-Warning "Export to Elastic was enabled in the config.yml"
+                $Credential = Get-Credential -Message "Please enter credential for $($cfg.ExportToElastic.URL)" -Title "Elastic Credential Request"
+            }
         }
 
         if (-not (Test-Path $Destination -PathType Container)) {
@@ -75,11 +84,11 @@ function Export-SigmaRule {
             # single rule
             $rule = $db.Query("SELECT * FROM rule WHERE id = @id", @{ id = $Id })[0]
 
-            if ($rule.is_enabled -eq 0 -and -not $IncludeDisabled) {
-                Write-Warning "Rule '$Id' is disabled. Use -IncludeDisabled to export it anyway."
+            if ($rule.is_enabled -eq 0 -and $ExcludeDisabled) {
+                Write-Verbose "Rule '$Id' is disabled and -ExcludeDisabled was passed. Skipping rule."
             }
             elseif ($rule.Count -gt 0) {
-                Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig
+                Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig -Credential:$Credential
                 Write-Output "Rule exported: '$($rule.title)'"
             }
             else {
@@ -92,17 +101,16 @@ function Export-SigmaRule {
             if ($rules.Count -gt 0) {
                 $i = 1
                 foreach ($rule in $rules) {
-                    if ($rule.is_enabled -eq 0 -and -not $IncludeDisabled) {
-                        Write-Verbose "Rule '$Id' is disabled. Use -IncludeDisabled to export it anyway."
+                    if ($rule.is_enabled -eq 0 -and $ExcludeDisabled) {
+                        Write-Verbose "Rule '$Id' is disabled and -ExcludeDisabled was passed. Skipping rule."
                     }
                     else {
                         $max = $rules.Count
-                        $now = '{0:d3}' -f $i
                         $percent = 100 / $max * $i
                         $name = $rule.title
 
-                        Write-Progress -Activity "Exporting" -Status "$now / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
-                        Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig
+                        Write-Progress -Activity "Exporting" -Status "$i / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
+                        Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig -Credential:$Credential
                         $i++
                     }
                 }
