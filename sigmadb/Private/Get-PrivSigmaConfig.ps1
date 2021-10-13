@@ -28,7 +28,7 @@ function Get-PrivSigmaConfig {
     )
 
     if (Test-Path $Config) {
-        $cfg = Get-Content -Path $Config | ConvertFrom-Json
+        $cfg = Get-Content -Path $Config | ConvertFrom-Yaml -Ordered
 
         $testpaths = @($cfg.Folders.Root, $cfg.Folders.Rules, $cfg.Folders.Exports)
 
