@@ -46,7 +46,9 @@ function Export-PrivSigmaRule {
         [Parameter(Mandatory = $false)]
         [switch]$Elastic,
         [Parameter(Mandatory = $false)]
-        [string]$BackendConfig
+        [string]$BackendConfig,
+        [Parameter(Mandatory = $false)]
+        [pscredential]$Credential
     )
 
     begin {
@@ -95,6 +97,20 @@ function Export-PrivSigmaRule {
             Set-Location $currentloc
 
             $ndjson | Out-File -FilePath "$Destination\rule_import.ndjson" -Encoding utf8 -Append
+
+            if ($Config.ExportToElastic.Enabled) {
+                $parameters = @{
+                    Method         = 'Post'
+                    Uri            = "$($Config.ExportToElastic.URL)/api/detection_engine/rules/_import?overwrite=true"
+                    Headers        = @{'kbn-xsrf' = 'true' }
+                    ContentType    = 'multipart/form-data'
+                    Form           = @{file = Get-Item "$Destination\rule_import.ndjson" }
+                    Credential     = $Credential
+                    Authentication = 'Basic'
+                }
+
+                Invoke-RestMethod @parameters
+            }
         }
     }
 
