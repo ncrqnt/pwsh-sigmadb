@@ -31,20 +31,40 @@ function New-PrivSigmaConfig {
     }
     $root = Split-Path (Resolve-Path -Path $Config -Relative)
 
-    $cfg = [PSCustomObject]@{
-        Files = [PSCustomObject]@{
-            Database = "$root\database.db"
-        }
-        Folders  = [PSCustomObject]@{
-            Root    = "$root"
-            Rules   = "$root\rules"
-            Exports = "$root\exports"
-        }
-        RuleSettings = [PSCustomObject]@{
-            CustomTags = @("custom")
-        }
-    }
-    $cfg | ConvertTo-Json | Out-File -FilePath $Config -Encoding utf8
+    $settings = @"
+# File locations
+Files:
+  Database: '$root\database.db'
+
+# Folder locations
+Folders:
+  Root: '$root'
+  Rules: '$root\rules'
+  Exports: '$root\exports'
+
+# Rule specific settings
+RuleSettings:
+  CustomTags:             # Rules with custom tags are ignored during update process
+    - custom
+
+# Export settings for elasticsearch
+ExportToElastic:
+  Enabled: false
+  URL: <hostname:port>    # elasticsearch url and port
+
+# Case-sensitivity settings
+CaseSensitivity:
+  Enabled: false
+  Mode: lowercase         # currently supported: 'lowercase', 'uppercase' / default: 'lower'
+  AllFields: false        # if true all fields are transformed, else only the listed under 'Fields'
+  Fields:
+    - process.name
+    - host.name
+    - user.name
+"@
+
+    $settings | Out-File -FilePath $Config -Encoding utf8
+    $cfg = Get-Content $Config -Raw -Encoding utf8 | ConvertFrom-Yaml -Ordered
 
     # Create file structure
     try {
