@@ -54,9 +54,36 @@ function ConvertTo-PrivSigmaYaml {
         $yaml = Get-Content "$($Config.Folders.Rules)\$($Rule.file_name)" -Raw -Encoding utf8
         $dict = $yaml | ConvertFrom-Yaml -Ordered
 
+        # Transform case
+        if ($Config.CaseSensitivity.Enabled) {
+            $selections = $dict.detection.Keys | Where-Object { $_ -ne 'condition' }
+
+            foreach ($selection in $selections) {
+                $fields = $dict.detection.$selection.Keys
+
+                foreach ($field in $fields) {
+                    $key = $field -replace '\|.*', ''
+
+                    if ($Config.CaseSensitivity.AllFields -or ($key -in $Config.CaseSensitivity.Fields)) {
+                        if ($Config.CaseSensitivity.Mode -eq 'uppercase') {
+                            $newCase = $dict.detection.$selection[0].$field.ToUpper()
+                        }
+                        else {
+                            $newCase = $dict.detection.$selection[0].$field.ToLower()
+                        }
+
+                        $dict.detection.$selection[0].$field = $newCase
+                    }
+                }
+            }
+        }
+
         # Add exceptions to yaml
         if ($exceptions.Count -gt 0) {
             $yaml = (Add-PrivSigmaException -RuleDict $dict -ExceptionList $exceptions) | ConvertTo-Yaml
+        }
+        else {
+            $yaml = $dict | ConvertTo-Yaml
         }
 
         return $yaml
