@@ -4,7 +4,7 @@
 .DESCRIPTION
     Compare and Update sigma rules inside the database
 .EXAMPLE
-    PS C:\> Update-SigmaRule -RulesFolder .\sigma\rules -Config .\sigmadb\config.json
+    PS C:\> Update-SigmaRule -RulesFolder .\sigma\rules -Config .\sigmadb\config.yml
     Checks for each yml/yaml file in .\sigma\rules if it's in the database and compares hash.
     If the hash mismatch, the content will be comapred and the user has to choose to update or not
 .INPUTS
@@ -35,7 +35,7 @@ function Update-SigmaRule {
         [ValidateScript( { if (Test-Path $_ -PathType Container) { $true } else { throw "$_ is not a directory." } })]
         [string]$RulesFolder,
         [Parameter(Mandatory = $false)]
-        [string]$Config = '.\sigmadb\config.json',
+        [string]$Config = '.\sigmadb\config.yml',
         [Parameter(Mandatory = $false)]
         [switch]$IncludeDisabled
     )

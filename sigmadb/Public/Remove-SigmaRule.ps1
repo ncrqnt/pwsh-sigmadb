@@ -31,7 +31,7 @@ function Remove-SigmaRule {
         [Alias('Rule')]
         [string]$Id,
         [Parameter(Mandatory = $false)]
-        [string]$Config = '.\sigmadb\config.json'
+        [string]$Config = '.\sigmadb\config.yml'
     )
 
     begin {

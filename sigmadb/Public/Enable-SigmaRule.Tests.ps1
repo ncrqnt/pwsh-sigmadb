@@ -10,7 +10,7 @@ BeforeDiscovery {
 InModuleScope sigmadb {
     Describe "Enable-SigmaRule" {
         BeforeEach {
-            $config = "$TestDrive\sigmadb\config.json"
+            $config = "$TestDrive\sigmadb\config.yml"
             Import-SigmaRule -Path ".\testing\rules" -Config $config -Disable -NoProgressBar
         }
         Context "Functionality Test" {

@@ -10,7 +10,7 @@ BeforeAll {
 Describe "Get-SigmaRule" {
     Context "Database with data" {
         BeforeAll {
-            $config = "$TestDrive\sigmadb\config.json"
+            $config = "$TestDrive\sigmadb\config.yml"
             Import-SigmaRule -Path ".\testing\rules" -Config $config -NoProgressBar
         }
         It "should list all rules found in database" {
@@ -36,7 +36,7 @@ Describe "Get-SigmaRule" {
     Context "No/Empty database" {
         BeforeAll {
             # create empty database
-            $config = "$TestDrive\sigmadb\config.json"
+            $config = "$TestDrive\sigmadb\config.yml"
             Get-SigmaRule -Config $config
         }
         It 'should create file structure' {
@@ -62,7 +62,7 @@ Describe "Get-SigmaRule" {
 
     Context "Output Types" {
         BeforeAll {
-            $config = "$TestDrive\sigmadb\config.json"
+            $config = "$TestDrive\sigmadb\config.yml"
             Import-SigmaRule -Path ".\testing\rules" -Config $config -NoProgressBar
         }
         It "should output in an OrderedDictionary" {

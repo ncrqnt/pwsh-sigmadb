@@ -59,19 +59,19 @@ Import-SigmaRule [-Path] <String> [-Config <String>] [-Recurse] [-Disable] [-For
 | Parameter |  Type  | Mandatory | Description                                                                                                              |
 | --------- | :----: | :-------: | ------------------------------------------------------------------------------------------------------------------------ |
 | `Path`    | String |    Yes    | Folder of sigma rules to import or single sigma rule file                                                                |
-| `Config`  | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json` |
+| `Config`  | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml` |
 | `Recurse` | Switch |    No     | Recurse folder defined in Path to also import rules in subfolders                                                        |
 | `Disable` | Switch |    No     | Mark all rules as disabled (explicit update and export necessary)                                                        |
 | `Force`   | Switch |    No     | Overwrite existing rules                                                                                                 |
 
 ```powershell
 # Example 1:
-# Imports all rules from .\sigma\rules\windows and subfolders. Config file is generated automatically and located in .\sigmadb\config.json
+# Imports all rules from .\sigma\rules\windows and subfolders. Config file is generated automatically and located in .\sigmadb\config.yml
 Import-SigmaRule -Path .\sigma\rules\windows -Recurse
 
 # Example 2:
 # Imports all rules from .\sigma\rules\windows\builtin but disabled them (explicit update and export only)
-Import-SigmaRule -Path .\sigma\rules\windows\builtin -Config C:\sigmarules\config.json -Disable
+Import-SigmaRule -Path .\sigma\rules\windows\builtin -Config C:\sigmarules\config.yml -Disable
 ```
 
 ## Get-SigmaRule
@@ -82,7 +82,7 @@ Get-SigmaRule [[-Id] <String>] [[-Config] <String>] [[-Type] <String>] [<CommonP
 | Parameter |  Type  | Mandatory | Description                                                                                                              |
 | --------- | :----: | :-------: | ------------------------------------------------------------------------------------------------------------------------ |
 | `Id`      | String |    No     | Rule ID. If not given, all rules are affected                                                                            |
-| `Config`  | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json` |
+| `Config`  | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml` |
 | `Type`    | Switch |    No     | Output type: 'Plain', 'JSON' or 'YAML'. Default: 'Plain' (Ordered Dictionary)                                            |
 
 ```powershell
@@ -104,7 +104,7 @@ Disable-SigmaRule [-Id] <String> [[-Config] <String>] [<CommonParameters>]
 | Parameter |  Type  | Mandatory | Description                                                                                                              |
 | --------- | :----: | :-------: | ------------------------------------------------------------------------------------------------------------------------ |
 | `Id`      | String |    Yes    | Rule ID                                                                                                                  |
-| `Config`  | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json` |
+| `Config`  | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml` |
 
 ```powershell
 # Example 1:
@@ -124,7 +124,7 @@ Remove-SigmaRule [-Id] <String> [[-Config] <String>] [-WhatIf] [-Confirm] [<Comm
 | Parameter |  Type  | Mandatory | Description                                                                                                              |
 | --------- | :----: | :-------: | ------------------------------------------------------------------------------------------------------------------------ |
 | `Id`      | String |    Yes    | Rule ID                                                                                                                  |
-| `Config`  | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json` |
+| `Config`  | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml` |
 | `WhatIf`  | Switch |    No     | Shows what it does, without doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                |
 | `Confirm` | Switch |    No     | Confirm before doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                             |
 
@@ -144,7 +144,7 @@ Export-SigmaRule [-Id <String>] [-Destination <String>] [-Config <String>] -Sigm
 | ----------------- | :----: | :-------: | ------------------------------------------------------------------------------------------------------------------------ |
 | `Id`              | String |    No     | Rule ID. If not given, all rules affected (except disabled)                                                              |
 | `Destination`     | String |    No     | Export folder. Default inside `config.json`                                                                              |
-| `Config`          | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json` |
+| `Config`          | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml` |
 | `SigmaRepo`       | String |    Yes    | Path to the cloned (sigma repository)[https://github.com/SigmaHQ/sigma]                                                  |
 | `IncludeDisabled` | Switch |    No     | Include disabled rules                                                                                                   |
 
@@ -173,7 +173,7 @@ Update-SigmaRule [-RulesFolder] <String> [[-Config] <String>] [-IncludeDisabled]
 | Parameter         |  Type  | Mandatory | Description                                                                                                              |
 | ----------------- | :----: | :-------: | ------------------------------------------------------------------------------------------------------------------------ |
 | `RulesFolder`     | String |    Yes    | Path to folder with the new rules                                                                                        |
-| `Config`          | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json` |
+| `Config`          | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml` |
 | `IncludeDisabled` | Switch |    No     | Include disabled rules                                                                                                   |
 | `WhatIf`          | Switch |    No     | Shows what it does, without doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                |
 | `Confirm`         | Switch |    No     | Confirm before doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                             |
@@ -199,7 +199,7 @@ New-SigmaException [-Id] <String> [[-Operator] <String>] [[-SearchId] <String>] 
 | `Operator` | String |    No     | Operator: 'and', 'nand', 'or', 'nor'. Default: 'nand' (not and)                                                                         |
 | `SearchId` | String |    No     | Search identifier (see [SIGMA specification](https://github.com/SigmaHQ/sigma/wiki/Specification#search-identifier)). Default: 'filter' |
 | `Filter`   | String |    Yes    | Filter/Rule/Exception in JSON (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Tutorial))                                       |
-| `Config`   | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json`                |
+| `Config`   | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml`                |
 | `WhatIf`   | Switch |    No     | Shows what it does, without doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                               |
 | `Confirm`  | Switch |    No     | Confirm before doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                                            |
 
@@ -249,7 +249,7 @@ Set-SigmaException [-Id] <String> [-SearchId] <String> [-Operator] <String> [-Fi
 | `SearchId` | String |    Yes    | Search identifier (see [SIGMA specification](https://github.com/SigmaHQ/sigma/wiki/Specification#search-identifier))     |
 | `Operator` | String |    Yes    | Operator: 'and', 'nand', 'or', 'nor'. Default: 'nand' (not and)                                                          |
 | `Filter`   | String |    Yes    | Filter/Rule/Exception in JSON (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Tutorials))                        |
-| `Config`   | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json` |
+| `Config`   | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml` |
 | `WhatIf`   | Switch |    No     | Shows what it does, without doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                |
 | `Confirm`  | Switch |    No     | Confirm before doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                             |
 
@@ -284,7 +284,7 @@ Remove-SigmaException [-Id] <String> [-SearchId] <String> [[-Config] <String>] [
 | ---------- | :----: | :-------: | ------------------------------------------------------------------------------------------------------------------------ |
 | `Id`       | String |    Yes    | Rule ID                                                                                                                  |
 | `SearchId` | String |    Yes    | Search identifier (see [SIGMA specification](https://github.com/SigmaHQ/sigma/wiki/Specification#search-identifier))     |
-| `Config`   | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.json` |
+| `Config`   | String |    No     | Path to `config.json` (see [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki/Config)). Default: `.\sigmadb\config.yml` |
 | `WhatIf`   | Switch |    No     | Shows what it does, without doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                |
 | `Confirm`  | Switch |    No     | Confirm before doing something (see [ShouldProcess](https://bit.ly/3EyDs1R))                                             |
 

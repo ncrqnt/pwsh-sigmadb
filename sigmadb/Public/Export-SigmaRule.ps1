@@ -41,7 +41,7 @@ function Export-SigmaRule {
         [string]$Destination,
         [Parameter(Mandatory = $false, ParameterSetName='sigma')]
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
-        [string]$Config = '.\sigmadb\config.json',
+        [string]$Config = '.\sigmadb\config.yml',
         [Parameter(Mandatory = $true, ParameterSetName='sigma')]
         [Parameter(Mandatory = $true, ParameterSetName='elastic')]
         [ValidateScript( { if (Test-Path $_ -PathType Container) { $true } else { throw "$_ is not a directory." } })]

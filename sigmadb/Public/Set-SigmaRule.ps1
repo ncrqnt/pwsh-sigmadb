@@ -5,7 +5,7 @@
     Set/Change existing rule in database.
 .INPUTS
     Id: Rule id
-    Config: Path to config file. default: .\sigmadb\config.json
+    Config: Path to config file. default: .\sigmadb\config.yml
     FileName: New rule file name
     FileHash: File hash of current rule file
     IsEql: Rule has to be converted to EQL ('near' aggregation)
@@ -29,7 +29,7 @@ function Set-SigmaRule {
         [Parameter(Mandatory = $true, ValueFromPipeline)]
         [string]$Id,
         [Parameter(Mandatory = $false)]
-        [string]$Config = '.\sigmadb\config.json',
+        [string]$Config = '.\sigmadb\config.yml',
         [Parameter(Mandatory = $false)]
         [string]$FileName,
         [Parameter(Mandatory = $false)]

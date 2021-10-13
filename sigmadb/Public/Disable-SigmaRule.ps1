@@ -21,7 +21,7 @@ function Disable-SigmaRule {
         [Parameter(Mandatory = $true, ValueFromPipeline)]
         [string]$Id,
         [Parameter(Mandatory = $false)]
-        [string]$Config = ".\sigmadb\config.json"
+        [string]$Config = ".\sigmadb\config.yml"
     )
 
     process {
