@@ -56,23 +56,24 @@ function ConvertTo-PrivSigmaYaml {
 
         # Transform case
         if ($Config.CaseSensitivity.Enabled) {
-            $selections = $dict.detection.Keys | Where-Object { $_ -ne 'condition' }
+            $selections = $dict.detection.Keys | Where-Object { $_ -notin ('condition', 'timeframe') }
 
             foreach ($selection in $selections) {
-                $fields = $dict.detection.$selection.Keys
+                $fields = $dict.detection.$selection.Keys.Clone()
 
                 foreach ($field in $fields) {
                     $key = $field -replace '\|.*', ''
+                    $fieldname = $field.Clone()
 
                     if ($Config.CaseSensitivity.AllFields -or ($key -in $Config.CaseSensitivity.Fields)) {
                         if ($Config.CaseSensitivity.Mode -eq 'uppercase') {
-                            $newCase = $dict.detection.$selection[0].$field.ToUpper()
+                            $newCase = $dict.detection.$selection[$fieldname].ToUpper()
                         }
                         else {
-                            $newCase = $dict.detection.$selection[0].$field.ToLower()
+                            $newCase = $dict.detection.$selection[$fieldname].ToLower()
                         }
 
-                        $dict.detection.$selection[0].$field = $newCase
+                        $dict.detection.$selection[$fieldname] = $newCase
                     }
                 }
             }
