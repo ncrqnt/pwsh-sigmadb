@@ -86,7 +86,7 @@ function Import-PrivSigmaRule {
                 creation    = (Get-Date $Rule.date -UFormat %F)
                 modified    = $null -ne $Rule.modified ? (Get-Date $Rule.modified -UFormat %F) : (Get-Date $Rule.date -UFormat %F)
                 fileHash    = $filehash
-                isEql       = $Rule.detection.condition -like '*near*' ? 1 : 0
+                isEql       = $Rule.detection.timeframe ? 1 : 0
                 isCustom    = $isCustom
                 isEnabled   = $Disable ? 0 : 1
                 installDate = $date
