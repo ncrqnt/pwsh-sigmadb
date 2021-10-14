@@ -55,7 +55,9 @@ function Export-SigmaRule {
         [ValidateScript( { if (Test-Path $_ -PathType Leaf) { $true } else { throw "$_ not found or not a file." } })]
         [string]$BackendConfig,
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
-        [pscredential]$Credential
+        [pscredential]$Credential,
+        [Parameter(Mandatory = $false, ParameterSetName='elastic')]
+        [switch]$NoProgressBar
     )
 
     begin {
@@ -77,6 +79,9 @@ function Export-SigmaRule {
             Write-Error "Destination '$Destination' does not exist or is not a folder" -ErrorAction Stop
             return
         }
+        else {
+            Get-ChildItem $Destination -Recurse | ForEach-Object { Remove-Item $_ | Out-Null }
+        }
     }
 
     process {
@@ -88,7 +93,7 @@ function Export-SigmaRule {
                 Write-Verbose "Rule '$Id' is disabled and -ExcludeDisabled was passed. Skipping rule."
             }
             elseif ($rule.Count -gt 0) {
-                Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig -Credential:$Credential
+                Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig
                 Write-Output "Rule exported: '$($rule.title)'"
             }
             else {
@@ -109,8 +114,10 @@ function Export-SigmaRule {
                         $percent = 100 / $max * $i
                         $name = $rule.title
 
-                        Write-Progress -Activity "Exporting" -Status "$i / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
-                        Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig -Credential:$Credential
+                        if (-not $NoProgressBar) {
+                            Write-Progress -Activity "Exporting" -Status "$i / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
+                        }
+                        Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig
                         $i++
                     }
                 }
@@ -118,6 +125,20 @@ function Export-SigmaRule {
             else {
                 Write-Warning "No rules in database '$($cfg.Files.Database)' found."
             }
+        }
+
+        if ($cfg.ExportToElastic.Enabled) {
+            $parameters = @{
+                Method         = 'Post'
+                Uri            = "$($cfg.ExportToElastic.URL)/api/detection_engine/rules/_import?overwrite=true"
+                Headers        = @{'kbn-xsrf' = 'randombullshitgo' }
+                ContentType    = 'multipart/form-data'
+                Form           = @{file = Get-Item "$Destination\rule_import.ndjson" }
+                Credential     = $Credential
+                Authentication = 'Basic'
+            }
+
+            Invoke-RestMethod @parameters
         }
     }
 
