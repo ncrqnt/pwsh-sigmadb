@@ -39,7 +39,7 @@ function Export-PrivSigmaRule {
         [string]$Destination,
         [Parameter(Mandatory = $true)]
         [SigmaDB]$Database,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$SigmaRepo,
         [Parameter(Mandatory = $true)]
         [PSCustomObject]$Config,
