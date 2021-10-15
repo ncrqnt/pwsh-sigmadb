@@ -34,8 +34,8 @@ function Get-PrivSigmaConfig {
 
         foreach ($path in $testpaths) {
             if (-not (Test-Path $path)) {
-                Write-Error "Could not find path from config '$path'"
-                return
+                Write-Verbose "'$path' not found. Creating directory."
+                New-Item -Path $path -ItemType Directory -Force | Out-Null
             }
         }
     }
