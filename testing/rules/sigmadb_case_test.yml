@@ -1,0 +1,50 @@
+title: SigmaDB Rule Casing Test
+id: dd7b67be-7dcf-4476-a767-603b3ce507ee
+status: experimental
+description: Rule to test lower-/upper-casing with sigmadb. Contains every possible detection notation.
+references: []
+tags:
+    - custom
+author: ncrqnt
+date: 2021/10/15
+logsource:
+    product: windows
+detection:
+    selection1:
+        Image: C:\Windows\Temp\test.exe
+        AccountName: TestUser
+    selection2:
+        - Image: C:\Windows\System32\Test.exe
+        - Image: C:\Windows\SysWOW64\test.ExE
+    selection3:
+        Image:
+            - C:\Windows\System32\Test.exe
+            - C:\Windows\SysWOW64\tEsT.eXe
+        AccountName:
+            - tEsTUsEr
+            - uSeRtest
+        AccountDomain: thisIsDomain
+    selection4:
+        - Image: C:\Windows\System32\Test.exe
+          AccountName: tEsTUsEr
+        - Image: C:\Windows\SysWOW64\test.ExE
+          AccountName: uSeRTest
+    selection5:
+        - random
+        - keywords
+        - without
+        - a
+        - field
+    selection6:
+        - Image:
+            - C:\Windows\System32\Test.exe
+            - C:\Windows\SysWOW64.tEsT.eXe
+            - C:\Windows\Temp\test.EXE
+        - AccountName:
+            - tEsTuSeR
+            - TestUser
+            - uSeRtEsT
+    condition: selection1 or selection2 or selection3 or selection4 or selection5 or selection6
+falsepositives:
+    - Many
+level: low
