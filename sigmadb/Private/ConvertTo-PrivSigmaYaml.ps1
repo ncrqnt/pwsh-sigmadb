@@ -58,26 +58,96 @@ function ConvertTo-PrivSigmaYaml {
         if ($Config.CaseSensitivity.Enabled) {
             $selections = $dict.detection.Keys | Where-Object { $_ -notin ('condition', 'timeframe') }
 
+            $type_orderedDict = [System.Collections.Specialized.OrderedDictionary]
+            $type_genericList = [System.Collections.Generic.List`1[[System.Object, System.Private.CoreLib, Version = 5.0.0.0, Culture = neutral, PublicKeyToken = 7cec85d7bea7798e]]]
+
             foreach ($selection in $selections) {
-                $fields = $dict.detection.$selection.Keys.Clone()
+                if ($null -ne $dict.detection.$selection.Keys) {
+                    $keys = $dict.detection.$selection.Keys.Clone()
+                }
 
-                foreach ($field in $fields) {
-                    $key = $field -replace '\|.*', ''
-                    $fieldname = $field.Clone()
+                if ($dict.detection.$selection -is $type_orderedDict) {
+                    # Selection is a ordered dictionary ('AND' / unique field names)
 
-                    if ($Config.CaseSensitivity.AllFields -or ($key -in $Config.CaseSensitivity.Fields)) {
-                        if ($Config.CaseSensitivity.Mode -eq 'uppercase') {
-                            $newCase = $dict.detection.$selection[$fieldname].ToUpper()
+                    foreach ($key in $keys) {
+                        $field = $key -replace '\|.*',''
+                        if ($Config.CaseSensitivity.AllFields -or ($field -in $Config.CaseSensitivity.Fields)) {
+                            if ($Config.CaseSensitivity.Mode -eq 'uppercase') {
+                                $newCase = $dict.detection.$selection.$key.ToUpper()
+                            }
+                            else {
+                                $newCase = $dict.detection.$selection.$key.ToLower()
+                            }
+
+                            $dict.detection.$selection.$key = $newCase
                         }
-                        else {
-                            $newCase = $dict.detection.$selection[$fieldname].ToLower()
-                        }
+                    }
+                }
+                elseif ($dict.detection.$selection -is $type_genericList) {
+                    # Selection is a generic list ('OR' / duplicate field names possible)
+                    foreach ($item in $dict.detection.$selection) {
+                        $index = $dict.detection.$selection.IndexOf($item)
 
-                        $dict.detection.$selection[$fieldname] = $newCase
+                        if ($item -is $type_orderedDict) {
+                            $keys = $item.Keys.Clone()
+
+                            foreach ($key in $keys) {
+                                $field = $key -replace '\|.*',''
+                                if ($Config.CaseSensitivity.AllFields -or ($field -in $Config.CaseSensitivity.Fields)) {
+                                    if ($Config.CaseSensitivity.Mode -eq 'uppercase') {
+                                        $newCase = $dict.detection.$selection[$index].$key.ToUpper()
+                                    }
+                                    else {
+                                        $newCase = $dict.detection.$selection[$index].$key.ToLower()
+                                    }
+
+                                    $dict.detection.$selection[$index].$key = $newCase
+                                }
+                            }
+                        }
                     }
                 }
             }
+
+            <# if ($dict.detection.$selection.Count -gt 1) {
+                        # Array
+                        Write-Verbose $selection
+                        $index = $dict.detection.$selection.IndexOf($item)
+                        $newCase = $item[0].ToLower()
+                        $dict.detection.$selection[$index][0] = $newCase
+                    }
+                    else {
+                        # single item
+                        $newCase = $item[0].ToLower()
+                        $dict.detection.$selection[0] = $newCase
+                    } #>
+            <# $key = $field -replace '\|.*', ''
+                    $index = $dict.detection.$selection.IndexOf($item)
+
+                    if ($Config.CaseSensitivity.AllFields -or ($key -in $Config.CaseSensitivity.Fields)) {
+                        if ($dict.detection.$selection.Count -gt 1) {
+                            if ($Config.CaseSensitivity.Mode -eq 'uppercase') {
+                                $newCase = $dict.detection.$selection[$index][$field].ToUpper()
+                            }
+                            else {
+                                $newCase = $dict.detection.$selection[$index][$field].ToLower()
+                            }
+
+                            $dict.detection.$selection[$index][$field] = $newCase
+                        }
+                        else {
+                            if ($Config.CaseSensitivity.Mode -eq 'uppercase') {
+                                $newCase = $dict.detection.$selection[$index].ToUpper()
+                            }
+                            else {
+                                $newCase = $dict.detection.$selection[$index].ToLower()
+                            }
+
+                            $dict.detection.$selection[$index] = $newCase
+                        }
+                    } #>
         }
+
 
         # Add exceptions to yaml
         if ($exceptions.Count -gt 0) {
