@@ -42,7 +42,9 @@ function Export-SigmaRule {
         [Parameter(Mandatory = $false, ParameterSetName='sigma')]
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
         [string]$Config = '.\sigmadb\config.yml',
-        [Parameter(Mandatory = $true, ParameterSetName='sigma')]
+        [Parameter(Mandatory = $false, ParameterSetName='sigma')]
+        [Parameter(Mandatory = $false, ParameterSetName='elastic')]
+        [switch]$NoProgressBar,
         [Parameter(Mandatory = $true, ParameterSetName='elastic')]
         [ValidateScript( { if (Test-Path $_ -PathType Container) { $true } else { throw "$_ is not a directory." } })]
         [string]$SigmaRepo,
@@ -55,9 +57,7 @@ function Export-SigmaRule {
         [ValidateScript( { if (Test-Path $_ -PathType Leaf) { $true } else { throw "$_ not found or not a file." } })]
         [string]$BackendConfig,
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
-        [pscredential]$Credential,
-        [Parameter(Mandatory = $false, ParameterSetName='elastic')]
-        [switch]$NoProgressBar
+        [pscredential]$Credential
     )
 
     begin {
@@ -93,7 +93,7 @@ function Export-SigmaRule {
                 Write-Verbose "Rule '$Id' is disabled and -ExcludeDisabled was passed. Skipping rule."
             }
             elseif ($rule.Count -gt 0) {
-                Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig
+                Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -Config $cfg -SigmaRepo:$SigmaRepo -Elastic:$Elastic -BackendConfig:$BackendConfig
                 Write-Output "Rule exported: '$($rule.title)'"
             }
             else {
@@ -111,11 +111,15 @@ function Export-SigmaRule {
                     }
                     else {
                         $max = $rules.Count
+                        $num = "{0:d$(([string]$max).Length)}" -f $i
                         $percent = 100 / $max * $i
                         $name = $rule.title
 
                         if (-not $NoProgressBar) {
-                            Write-Progress -Activity "Exporting" -Status "$i / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
+                            Write-Progress -Activity "Exporting" -Status "$num / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
+                        }
+                        else {
+                            Write-Output "[$num/$max] $name"
                         }
                         Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig
                         $i++
