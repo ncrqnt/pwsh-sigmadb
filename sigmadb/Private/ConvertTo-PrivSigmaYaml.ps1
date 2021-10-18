@@ -157,6 +157,11 @@ function ConvertTo-PrivSigmaYaml {
             $yaml = $dict | ConvertTo-Yaml
         }
 
+        # quote hex numbers (workaround)
+        if ($yaml -match '(0x)((\w|\d)*)') {
+            $yaml = $yaml -replace '(0x)((\w|\d)*)', "'`$1`$2'"
+        }
+
         return $yaml
     }
 
