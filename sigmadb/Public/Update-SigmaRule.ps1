@@ -54,7 +54,7 @@ function Update-SigmaRule {
             $rule_db = $db.Query("SELECT * FROM rule WHERE id = @id", @{ id = $yaml.id })[0]
 
             if ($null -ne $rule_db) {
-                $rule_hash = (Get-FileHash $rule.FullName -Algorithm SHA256).Hash
+                $rule_hash = (Get-FileHash $rule.FullName -Algorithm SHA256).Hash.ToLower()
                 if ($rule_db.is_enabled -eq 0 -and -not $IncludeDisabled) {
                     Write-Verbose -Message "Rule '$($rule_db.title)' is disabled. Use -IncludeDisabled to check updates for it."
                 }
