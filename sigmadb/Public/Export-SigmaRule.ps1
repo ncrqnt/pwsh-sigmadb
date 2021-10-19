@@ -31,7 +31,7 @@
 #>
 
 function Export-SigmaRule {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'medium')]
     param (
         [Parameter(Mandatory = $false, ParameterSetName='sigma')]
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
@@ -45,14 +45,15 @@ function Export-SigmaRule {
         [Parameter(Mandatory = $false, ParameterSetName='sigma')]
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
         [switch]$NoProgressBar,
-        [Parameter(Mandatory = $true, ParameterSetName='elastic')]
-        [ValidateScript( { if (Test-Path $_ -PathType Container) { $true } else { throw "$_ is not a directory." } })]
-        [string]$SigmaRepo,
         [Parameter(Mandatory = $false, ParameterSetName='sigma')]
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
         [switch]$ExcludeDisabled,
+
         [Parameter(Mandatory = $true, ParameterSetName='elastic')]
         [switch]$Elastic,
+        [Parameter(Mandatory = $true, ParameterSetName='elastic')]
+        [ValidateScript( { if (Test-Path $_ -PathType Container) { $true } else { throw "$_ is not a directory." } })]
+        [string]$SigmaRepo,
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
         [ValidateScript( { if (Test-Path $_ -PathType Leaf) { $true } else { throw "$_ not found or not a file." } })]
         [string]$BackendConfig,
@@ -69,7 +70,7 @@ function Export-SigmaRule {
         }
 
         if (-not $Credential) {
-            if ($cfg.ExportToElastic.Enabled) {
+            if ($cfg.ExportToElastic.Enabled -and $Elastic) {
                 Write-Warning "Export to Elastic was enabled in the config.yml"
                 $Credential = Get-Credential -Message "Please enter credential for $($cfg.ExportToElastic.URL)" -Title "Elastic Credential Request"
             }
@@ -131,18 +132,21 @@ function Export-SigmaRule {
             }
         }
 
-        if ($cfg.ExportToElastic.Enabled) {
+        if ($cfg.ExportToElastic.Enabled -and $Elastic) {
+            $importFile = "$Destination\rule_import.ndjson"
             $parameters = @{
                 Method         = 'Post'
                 Uri            = "$($cfg.ExportToElastic.URL)/api/detection_engine/rules/_import?overwrite=true"
                 Headers        = @{'kbn-xsrf' = 'randombullshitgo' }
                 ContentType    = 'multipart/form-data'
-                Form           = @{file = Get-Item "$Destination\rule_import.ndjson" }
+                Form           = @{file = Get-Item $importFile }
                 Credential     = $Credential
                 Authentication = 'Basic'
             }
 
-            Invoke-RestMethod @parameters
+            if ($PSCmdlet.ShouldProcess("'$importFile' ($((Get-Content $importFile -Encoding utf8).Length) rules)", "Upload to Elastic ($($cfg.ExportToElastic.URL))")) {
+                Invoke-RestMethod @parameters
+            }
         }
     }
 
