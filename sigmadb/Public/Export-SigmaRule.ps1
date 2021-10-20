@@ -31,7 +31,7 @@
 #>
 
 function Export-SigmaRule {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'medium')]
     param (
         [Parameter(Mandatory = $false, ParameterSetName='sigma')]
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
@@ -41,19 +41,24 @@ function Export-SigmaRule {
         [string]$Destination,
         [Parameter(Mandatory = $false, ParameterSetName='sigma')]
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
-        [string]$Config = '.\sigmadb\config.json',
-        [Parameter(Mandatory = $true, ParameterSetName='sigma')]
+        [string]$Config = '.\sigmadb\config.yml',
+        [Parameter(Mandatory = $false, ParameterSetName='sigma')]
+        [Parameter(Mandatory = $false, ParameterSetName='elastic')]
+        [switch]$NoProgressBar,
+        [Parameter(Mandatory = $false, ParameterSetName='sigma')]
+        [Parameter(Mandatory = $false, ParameterSetName='elastic')]
+        [switch]$ExcludeDisabled,
+
+        [Parameter(Mandatory = $true, ParameterSetName='elastic')]
+        [switch]$Elastic,
         [Parameter(Mandatory = $true, ParameterSetName='elastic')]
         [ValidateScript( { if (Test-Path $_ -PathType Container) { $true } else { throw "$_ is not a directory." } })]
         [string]$SigmaRepo,
-        [Parameter(Mandatory = $false, ParameterSetName='sigma')]
-        [Parameter(Mandatory = $false, ParameterSetName='elastic')]
-        [switch]$IncludeDisabled,
-        [Parameter(Mandatory = $true, ParameterSetName='elastic')]
-        [switch]$Elastic,
         [Parameter(Mandatory = $false, ParameterSetName='elastic')]
         [ValidateScript( { if (Test-Path $_ -PathType Leaf) { $true } else { throw "$_ not found or not a file." } })]
-        [string]$BackendConfig
+        [string]$BackendConfig,
+        [Parameter(Mandatory = $false, ParameterSetName='elastic')]
+        [pscredential]$Credential
     )
 
     begin {
@@ -64,9 +69,19 @@ function Export-SigmaRule {
             $Destination = $cfg.Folders.Exports
         }
 
+        if (-not $Credential) {
+            if ($cfg.ExportToElastic.Enabled -and $Elastic) {
+                Write-Warning "Export to Elastic was enabled in the config.yml"
+                $Credential = Get-Credential -Message "Please enter credential for $($cfg.ExportToElastic.URL)" -Title "Elastic Credential Request"
+            }
+        }
+
         if (-not (Test-Path $Destination -PathType Container)) {
             Write-Error "Destination '$Destination' does not exist or is not a folder" -ErrorAction Stop
             return
+        }
+        else {
+            Get-ChildItem $Destination -Recurse | ForEach-Object { Remove-Item $_ | Out-Null }
         }
     }
 
@@ -75,11 +90,11 @@ function Export-SigmaRule {
             # single rule
             $rule = $db.Query("SELECT * FROM rule WHERE id = @id", @{ id = $Id })[0]
 
-            if ($rule.is_enabled -eq 0 -and -not $IncludeDisabled) {
-                Write-Warning "Rule '$Id' is disabled. Use -IncludeDisabled to export it anyway."
+            if ($rule.is_enabled -eq 0 -and $ExcludeDisabled) {
+                Write-Verbose "Rule '$Id' is disabled and -ExcludeDisabled was passed. Skipping rule."
             }
             elseif ($rule.Count -gt 0) {
-                Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig
+                Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -Config $cfg -SigmaRepo:$SigmaRepo -Elastic:$Elastic -BackendConfig:$BackendConfig
                 Write-Output "Rule exported: '$($rule.title)'"
             }
             else {
@@ -92,16 +107,21 @@ function Export-SigmaRule {
             if ($rules.Count -gt 0) {
                 $i = 1
                 foreach ($rule in $rules) {
-                    if ($rule.is_enabled -eq 0 -and -not $IncludeDisabled) {
-                        Write-Verbose "Rule '$Id' is disabled. Use -IncludeDisabled to export it anyway."
+                    if ($rule.is_enabled -eq 0 -and $ExcludeDisabled) {
+                        Write-Verbose "Rule '$Id' is disabled and -ExcludeDisabled was passed. Skipping rule."
                     }
                     else {
                         $max = $rules.Count
-                        $now = '{0:d3}' -f $i
+                        $num = "{0:d$(([string]$max).Length)}" -f $i
                         $percent = 100 / $max * $i
                         $name = $rule.title
 
-                        Write-Progress -Activity "Exporting" -Status "$now / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
+                        if (-not $NoProgressBar) {
+                            Write-Progress -Activity "Exporting" -Status "$num / $max completed" -PercentComplete $percent -CurrentOperation "Rule: $name"
+                        }
+                        else {
+                            Write-Output "[$num/$max] $name"
+                        }
                         Export-PrivSigmaRule -Rule $rule -Destination $Destination -Database $db -SigmaRepo $SigmaRepo -Config $cfg -Elastic:$Elastic -BackendConfig:$BackendConfig
                         $i++
                     }
@@ -109,6 +129,23 @@ function Export-SigmaRule {
             }
             else {
                 Write-Warning "No rules in database '$($cfg.Files.Database)' found."
+            }
+        }
+
+        if ($cfg.ExportToElastic.Enabled -and $Elastic) {
+            $importFile = "$Destination\rule_import.ndjson"
+            $parameters = @{
+                Method         = 'Post'
+                Uri            = "$($cfg.ExportToElastic.URL)/api/detection_engine/rules/_import?overwrite=true"
+                Headers        = @{'kbn-xsrf' = 'randombullshitgo' }
+                ContentType    = 'multipart/form-data'
+                Form           = @{file = Get-Item $importFile }
+                Credential     = $Credential
+                Authentication = 'Basic'
+            }
+
+            if ($PSCmdlet.ShouldProcess("'$importFile' ($((Get-Content $importFile -Encoding utf8).Length) rules)", "Upload to Elastic ($($cfg.ExportToElastic.URL))")) {
+                Invoke-RestMethod @parameters
             }
         }
     }

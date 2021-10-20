@@ -47,7 +47,7 @@ function Set-SigmaException {
         [ValidateScript({if (Test-Json $_) { $true } else { throw "'$_' is not a valid JSON format!"}})]
         [string]$Filter,
         [Parameter(Mandatory = $false)]
-        [string]$Config = '.\sigmadb\config.json'
+        [string]$Config = '.\sigmadb\config.yml'
     )
 
     begin {

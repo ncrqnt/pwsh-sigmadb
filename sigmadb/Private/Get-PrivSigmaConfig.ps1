@@ -28,14 +28,14 @@ function Get-PrivSigmaConfig {
     )
 
     if (Test-Path $Config) {
-        $cfg = Get-Content -Path $Config | ConvertFrom-Json
+        $cfg = Get-Content -Path $Config | ConvertFrom-Yaml -Ordered
 
         $testpaths = @($cfg.Folders.Root, $cfg.Folders.Rules, $cfg.Folders.Exports)
 
         foreach ($path in $testpaths) {
             if (-not (Test-Path $path)) {
-                Write-Error "Could not find path from config '$path'"
-                return
+                Write-Verbose "'$path' not found. Creating directory."
+                New-Item -Path $path -ItemType Directory -Force | Out-Null
             }
         }
     }

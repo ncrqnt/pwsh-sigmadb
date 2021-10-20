@@ -33,7 +33,7 @@ function Remove-SigmaException {
         [Parameter(Mandatory = $true)]
         [string]$SearchId,
         [Parameter(Mandatory = $false)]
-        [string]$Config = '.\sigmadb\config.json'
+        [string]$Config = '.\sigmadb\config.yml'
     )
 
     begin {

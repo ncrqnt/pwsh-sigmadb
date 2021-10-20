@@ -39,7 +39,7 @@ function Get-SigmaRule {
         [Alias('Name', 'Rule')]
         [string]$Id,
         [Parameter(Mandatory = $false)]
-        [string]$Config = '.\sigmadb\config.json',
+        [string]$Config = '.\sigmadb\config.yml',
         [Parameter(Mandatory = $false)]
         [ValidateSet('JSON', 'YAML', 'Plain')]
         [string]$Type = 'Plain'
