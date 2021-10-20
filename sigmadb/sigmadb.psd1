@@ -118,8 +118,10 @@
                 'administration'
                 'manage'
                 'windows'
-                'detection rule'
+                'detectionrule'
                 'detection'
+                'siem'
+                'elastic'
             )
 
             # A URL to the license for this module.
