@@ -1,8 +1,13 @@
 # CHANGELOG
 
-# v0.2.1
+# v0.3.0
 
-Automatic build and release
+General improvements towards export:
+* Changed config file type to YAML
++ Added automatic import to elasticsearch's detection engine (disabled by default in config.yml)
++ Added normalization of all/provided fields (disabled by default in config.yml)
++ Added workaround for hex numbers not getting quoted (e.g. 0x100 --> '0x100')
++ Smaller changes and cosmetic improvements
 
 # v0.2.0
 
