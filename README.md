@@ -5,7 +5,6 @@
 - [pwsh-sigmadb](#pwsh-sigmadb)
 - [Table of Contents](#table-of-contents)
 - [Wiki](#wiki)
-- [To do](#to-do)
 - [Installation](#installation)
   - [Using PowerShellGet (not yet available)](#using-powershellget-not-yet-available)
   - [Using the repository](#using-the-repository)
@@ -25,14 +24,9 @@
 For more information look up the [wiki](https://github.com/ncrqnt/pwsh-sigmadb/wiki).
 
 
-# To do
-- [ ] CI/CD
-- [ ] Python script
-
-
 # Installation
 
-## Using PowerShellGet (not yet available)
+## Using PowerShellGet
 Open a PowerShell and type:
 ```powershell
 Install-Module -Name 'sigmadb' -AllowPrerelease
@@ -45,7 +39,7 @@ Clone this GitHub repository, open a PowerShell inside the folder and type:
 Install-Module -Name 'SimplySql'
 Install-Module -Name 'powershell-yaml'
 
-# Load sigmadb module
+# Load sigmadb module inside the repository
 Import-Module '.\sigmadb\sigmadb.psd1'
 ```
 
