@@ -40,9 +40,9 @@ function Set-SigmaException {
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$SearchId,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [ValidateSet('and', 'nand', 'or', 'nor')]
-        [string]$Operator,
+        [string]$Operator = 'nand',
         [Parameter(Mandatory = $true)]
         [ValidateScript({if (Test-Json $_) { $true } else { throw "'$_' is not a valid JSON format!"}})]
         [string]$Filter,
@@ -58,8 +58,9 @@ function Set-SigmaException {
     process {
         # replace 'not' operator abbrevation
         switch ($Operator) {
-            'nand' { $Operator = 'and not' }
-            'nor' { $Operator = 'or not'}
+            'nand' { $op = 'and not' }
+            'nor' { $op = 'or not'}
+            default { $op = $Operator }
         }
 
         # check if rule exist
@@ -72,7 +73,7 @@ function Set-SigmaException {
                 if ($SearchId -in $exceptions.search_identifier) {
                     $exception = $exceptions | Where-Object { $_.search_identifier -eq $SearchId }
                     if ($PSCmdlet.ShouldProcess($cfg.Files.Database, "Set-PrivSigmaException")) {
-                        Set-PrivSigmaException -ExceptionId $exception.id -RuleId $Id -Operator $Operator -SearchId $SearchId -Filter $filter -Database $db
+                        Set-PrivSigmaException -ExceptionId $exception.id -RuleId $Id -Operator $op -SearchId $SearchId -Filter $filter -Database $db
                     }
                 }
                 else {
