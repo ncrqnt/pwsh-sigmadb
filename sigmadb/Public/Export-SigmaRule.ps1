@@ -86,6 +86,14 @@ function Export-SigmaRule {
     }
 
     process {
+        if ($Elastic) {
+            # Update MITRE tactics and techniques in sigma repo
+            $here = (Get-Location).Path
+            Set-Location "$SigmaRepo\tools\config\mitre"
+            python.exe update_mitre.py | Out-Null
+            Set-Location $here
+        }
+
         if ($Id) {
             # single rule
             $rule = $db.Query("SELECT * FROM rule WHERE id = @id", @{ id = $Id })[0]
